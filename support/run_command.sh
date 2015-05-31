@@ -1,0 +1,2 @@
+cd $WORKDIR
+wright $WRIGHTFILE

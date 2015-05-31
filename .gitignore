@@ -1,0 +1,5 @@
+example/*
+!example/test
+!example/Gemfile
+!example/wright.rb
+!example/.kitchen.yml
