@@ -27,13 +27,13 @@ module Kitchen
     class Wright < Base
       attr_accessor :tmp_dir
 
-      default_config :wrightfile do |provisioner|
-        'wright.rb' if File.exist?('wright.rb') or
-        raise "No wright file found or specified!  Please either set a playbook in your .kitchen.yml config, or create a default wrapper playbook for your role in test/integration/playbooks/default.yml or test/integration/default.yml"
-      end
+      default_config :wrightfile, 'wright.rb'
+      default_config :install_method, 'gems'
+      default_config :log_level, 'default'
+      default_config :dry_run, 'false'
 
       def install_command
-        method = config[:install_method]
+        method = install_method
         unless %w(gems).include? method
           raise "Install method #{method} not supported."
         end
@@ -41,12 +41,15 @@ module Kitchen
       end
 
       def init_command
-        return "mkdir -p #{config[:root_path]}" # Make folder for upload, otherwise /tmp/kitchen will be a file
+        # Create folder for upload, otherwise /tmp/kitchen will be a file
+        return "mkdir -p #{config[:root_path]}"
       end
 
       def create_sandbox
         super
         debug("Creating local sandbox in #{sandbox_path}")
+        # Fix config[:attributes] if it does not exist
+        config[:attributes] = {} unless config.key?(:attributes)
 
         yield if block_given?
 
@@ -71,7 +74,7 @@ module Kitchen
 
       def run_command
         wright_shell_code_from_file(
-          ["WORKDIR=#{config[:root_path]}", "WRIGHTFILE=#{wrightfile}"],
+          ["WORKDIR=#{config[:root_path]}", "WRIGHTFILE=#{wrightfile}", "OPTIONS=#{wright_options}"],
           'run_command'
         )
       end
@@ -87,17 +90,32 @@ module Kitchen
       end
 
       def wrightfile
-        config[:wrightfile]
+        config[:attributes][:wrightfile] || config[:wrightfile]
       end
 
-      # For install with bundler. Not used yet.
-      def prepare_gemfile
-        gemfile_content = <<-GEMFILE
-        source 'https://rubygems.org'
-        gem 'wright',        '~> 0.3.0'
-        GEMFILE
-        File.write(sandbox_path + '/Gemfile', gemfile_content)
+      def install_method
+        config[:attributes][:install_method] || config[:install_method]
       end
+
+      def wright_options
+        opts = []
+        dry = config[:attributes][:dry_run] || config[:dry_run]
+        level = config[:attributes][:log_level] || config[:log_level]
+
+        opts << '--dry-run' if dry == 'true'
+        opts << '--verbose' if level == 'verbose'
+        opts << '--quiet' if level == 'quiet'
+
+        opts.join(' ')
+      end
+      # For install with bundler. Not used yet.
+      # def prepare_gemfile
+      #   gemfile_content = <<-GEMFILE
+      #   source 'https://rubygems.org'
+      #   gem 'wright',        '~> 0.3.0'
+      #   GEMFILE
+      #   File.write(sandbox_path + '/Gemfile', gemfile_content)
+      # end
 
       # This is a shameful copy from test-kitchen.
       # Without the copy, the path won't be correct.

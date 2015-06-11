@@ -7,12 +7,16 @@ debian() {
   apt-get --no-install-recommends --assume-yes install ruby
 }
 
+fedora() {
+  dnf -y install ruby rubygems
+}
+
 el() {
-  yum -y install ruby rubygems rubygem-rake
-  gem install rake --no-ri --no-rdoc #Needed on centos7
+  yum -y install ruby rubygems
 }
 
 if haveProg "apt-get -h" ; then debian
+elif haveProg "dnf -h" ; then fedora
 elif haveProg "yum -h" ; then el
 else
     echo "Your distribution is not yet supported."

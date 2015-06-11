@@ -1,2 +1,2 @@
 cd $WORKDIR
-wright $WRIGHTFILE
+wright $OPTIONS $WRIGHTFILE

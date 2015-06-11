@@ -28,4 +28,7 @@ platforms:
 
 suites:
   - name: default
-    wrightfile: lib/wright_include.rb
+  - name: special
+    attributes:
+      wrightfile: lib/wright_include.rb
+      log_level: verbose

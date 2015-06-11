@@ -3,3 +3,4 @@ example/*
 !example/Gemfile
 !example/wright.rb
 !example/.kitchen.yml
+*~
