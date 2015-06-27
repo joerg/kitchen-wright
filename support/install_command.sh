@@ -4,15 +4,15 @@ haveProg() {
 
 debian() {
   #apt-get update
-  apt-get --no-install-recommends --assume-yes install ruby
+  apt-get --no-install-recommends --assume-yes install ruby bundler
 }
 
 fedora() {
-  dnf -y install ruby rubygems
+  dnf -y install ruby rubygems rubygem-bundler
 }
 
 el() {
-  yum -y install ruby rubygems
+  yum -y install ruby rubygems rubygem-bundler
 }
 
 if haveProg "apt-get -h" ; then debian

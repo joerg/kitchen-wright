@@ -1,5 +1,6 @@
 # Kitchen provisioner for wright
 
+kitchen-wright is a kitchen provisioner for [wright](https://github.com/sometimesfood/wright). Its intention is to simplify testing your wright-scripts on different distributions and with different setups. All you need is a Gemfile and a .kitchen.yml.
 This is a  very, very, __VERY__ early development version. Use at your own risk.
 
 # HowTo
@@ -10,12 +11,12 @@ Some commands you may find helpful
 ```bash
 cd example
 cat .kitchen.yml
-bundle install --path .bundle
-bundle exec kitchen test default-debian-80
-bundle exec kitchen create default-debian-80
-bundle exec kitchen converge default-debian-80
-bundle exec kitchen verify default-debian-80
-bundle exec kitchen login default-debian-80
+bundle install --path .bundle --gemfile Gemfile.kitchen --binstubs
+bin/kitchen test default-debian-80
+bin/kitchen create default-debian-80
+bin/kitchen converge default-debian-80
+bin/kitchen verify default-debian-80
+bin/kitchen login default-debian-80
 ```
 
 The ```default-debian-80``` is actually a ```<suite>-<platform_name>```. The suite and platform_name come from the .kitchen.yml, and in platform_name any special characters are removed.
@@ -28,21 +29,21 @@ All config can be set in provisioner and suites. Since kitchen is quite static w
 
 ### install_method
 
-Default: gems
-Allowed values: gems (package, bundle will be supported in future versions)
+Default: bundler_local
+Allowed values: bunlder_local, bunlder_global (package, bundle will be supported in future versions)
 Examples:
 
 ```
 provisioner:
   name: wright
-  install_method: gems
+  install_method: bundler_local
 ```
 
 ```
 suites:
   name: any
   attributes:
-    install_method: gems
+    install_method: bundler_global
 ```
 
 ### wrightfile
@@ -129,7 +130,7 @@ For driver and transport see the according ```kitchen-docker_cli``` gem.
 
 # Gotcha!
 
-If you have tests you have to set the ```ruby_bindir``` of verifyer, because it will by default use chefs (```/opt/chef/embedded/bin```) ruby. Just add the following to your .kitchen.yml:
+If you have tests you have to set the ```ruby_bindir``` of verifier, because it will by default use chefs (```/opt/chef/embedded/bin```) ruby. Just add the following to your .kitchen.yml:
 ```
 verifier:
   ruby_bindir: /usr/bin
@@ -137,9 +138,10 @@ verifier:
 
 When working with the serverspec or minitest test suites of kitchen you may have to include a Gemfile which installs rake. This is a dependency that comes with ruby on many, but not all systems. See example folder for further details.
 
+By default kitchen-wright will create a Gemfile for your to install wright. If you already have a Gemfile, kitchen-wright will use this one and install (--without development) all specified Gems.
+
 # TODO
 
-* Add install methods for :package, :packagecloud?, :bundler
 * Add guards so wright, ruby etc. won't get installed every run
 * Add tests
 * Hide all unnecessary shell output

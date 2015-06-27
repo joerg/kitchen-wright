@@ -28,16 +28,12 @@ module Kitchen
       attr_accessor :tmp_dir
 
       default_config :wrightfile, 'wright.rb'
-      default_config :install_method, 'gems'
+      default_config :install_method, 'bundler_local'
       default_config :log_level, 'default'
       default_config :dry_run, 'false'
 
       def install_command
-        method = install_method
-        unless %w(gems).include? method
-          raise "Install method #{method} not supported."
-        end
-        wright_shell_code_from_file([], "install_command_#{method}")
+        wright_shell_code_from_file([], "install_command")
       end
 
       def init_command
@@ -54,7 +50,7 @@ module Kitchen
         yield if block_given?
 
         prepare_wrightfile
-        #prepare_gemfile if config[:install_method] == 'bundler'
+        prepare_gemfile unless File.exist?('Gemfile')
         info('Finished Preparing files for transfer')
       end
 
@@ -65,17 +61,21 @@ module Kitchen
       end
 
       def prepare_command
-        method = config[:install_method]
-        unless %w(gems).include? method
+        method = install_method
+        if %w(bundler_local bundler_global).include? method
+          wright_shell_code_from_file(
+            ["WORKDIR=#{config[:root_path]}", "OPTIONS=#{bundler_options}"],
+            'prepare_command_bundler'
+          )
+        else
           raise "Install method #{method} not supported."
         end
-        wright_shell_code_from_file([], "prepare_command_#{method}")
       end
 
       def run_command
         wright_shell_code_from_file(
           ["WORKDIR=#{config[:root_path]}", "WRIGHTFILE=#{wrightfile}", "OPTIONS=#{wright_options}"],
-          'run_command'
+          "run_command_#{install_method}"
         )
       end
 
@@ -83,7 +83,7 @@ module Kitchen
 
       def prepare_wrightfile
         info('Preparing wrightfile')
-        debug("Copying wrightfile from #{wrightfile} to #{sandbox_path}")
+        debug("Copying all wrightfiles to #{sandbox_path}")
         (Dir.glob(File.join("**"))-prepare_excludes).each do |t|
           FileUtils.cp_r(t, sandbox_path)
         end
@@ -108,14 +108,22 @@ module Kitchen
 
         opts.join(' ')
       end
-      # For install with bundler. Not used yet.
-      # def prepare_gemfile
-      #   gemfile_content = <<-GEMFILE
-      #   source 'https://rubygems.org'
-      #   gem 'wright',        '~> 0.3.0'
-      #   GEMFILE
-      #   File.write(sandbox_path + '/Gemfile', gemfile_content)
-      # end
+
+      def bundler_options
+        opts = []
+        #opts << '--without development'
+        opts << '--path .bundle' if install_method == 'bundler_local'
+
+        '"' + opts.join(' ') + '"'
+      end
+
+      def prepare_gemfile
+        gemfile_content = <<-GEMFILE
+        source 'https://rubygems.org'
+        gem 'wright'
+        GEMFILE
+        File.write(sandbox_path + '/Gemfile', gemfile_content)
+      end
 
       # This is a shameful copy from test-kitchen.
       # Without the copy, the path won't be correct.
@@ -130,9 +138,9 @@ module Kitchen
       end
 
       def prepare_excludes
-        %w(.git .bundle test Gemfile Gemfile.lock
-           .kitchen.yml .kitchen.local.yml README.md
-           README.rdoc)
+        %w(.git .bundle test
+           .kitchen.yml .kitchen.local.yml
+           README.md README.rdoc)
       end
     end
   end

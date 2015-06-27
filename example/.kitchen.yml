@@ -7,7 +7,6 @@ transport:
 
 provisioner:
   name: wright
-  install_method: gems
 
 verifier:
   ruby_bindir: /usr/bin
@@ -32,3 +31,4 @@ suites:
     attributes:
       wrightfile: lib/wright_include.rb
       log_level: verbose
+      install_method: bundler_global
