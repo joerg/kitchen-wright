@@ -1,6 +1,5 @@
-example/*
-!example/test
-!example/Gemfile
-!example/wright.rb
-!example/.kitchen.yml
+example/bin
+example/.kitchen
+example/.bundle
+example/*.lock
 *~

@@ -5,7 +5,7 @@ $:.unshift File.expand_path('../lib', __FILE__)
 Gem::Specification.new do |s|
   s.name          = "kitchen-wright"
   s.license       = "Apache-2.0"
-  s.version       = "0.1.0"
+  s.version       = "0.0.1"
   s.authors       = ["Jörg Herzinger"]
   s.email         = ["joerg.herzinger@oiml.at"]
   s.homepage      = "https://github.com/joerg/kitchen-wright"
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.description = <<-EOF
 == DESCRIPTION:
 
-Wright provisioner for test-kitchen
+A test-kitchen provisioner provisioner for wright
 
 == FEATURES:
 
