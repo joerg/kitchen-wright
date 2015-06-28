@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+
+  gem 'test-kitchen',    '~> 1.4.0'
+  gem 'kitchen-docker_cli',  '~> 0.13.0'
+  #gem 'kitchen-vagrant', '~> 0.18.0'
+  gem 'kitchen-wright', :path => '../'
